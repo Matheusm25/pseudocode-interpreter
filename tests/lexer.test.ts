@@ -114,13 +114,91 @@ test('Get invalid operation name', () => {
   );
 });
 
-// test('Get condition token', () => {
-//   expect(true).toBe(false);
-// });
+test('Get define with condition', () => {
+  const input = `
+    using user_role string;
+    define is_admin if user_role = admin then 1 else 0;
+  `;
+});
 
-// test('Get condition token with multiple conditions', () => {
-//   expect(true).toBe(false);
-// });
+test('Get define token with multiple conditions', () => {
+  const input = `
+    using user_role string;
+    using user_password string;
+
+    define default_password admin123;
+
+    define is_admin if user_role = admin and user_password = default_password then 1 else 0;
+  `;
+});
+
+test('Get define token conditions and operations', () => {
+  const input = `
+    using user_height_in_meters number;
+
+    define is_tall if multiply(user_height_in_meters, 100) > 180 then 1 else 0;
+  `;
+});
+
+// test all text and number operations = > < >= <= != regex
+
+test('Test > operation', () => {
+  const input = `
+    using user_height_in_meters number;
+
+    define is_tall if user_height_in_meters > 180 then 1 else 0;
+  `;
+});
+
+test('Test >= operation', () => {
+  const input = `
+    using user_height_in_meters number;
+
+    define is_tall if user_height_in_meters >= 180 then 1 else 0;
+  `;
+});
+
+test('Test < operation', () => {
+  const input = `
+    using user_height_in_meters number;
+
+    define is_short if user_height_in_meters < 180 then 1 else 0;
+  `;
+});
+
+test('Test <= operation', () => {
+  const input = `
+    using user_height_in_meters number;
+
+    define is_short if user_height_in_meters <= 180 then 1 else 0;
+  `;
+});
+
+test('Test != operation', () => {
+  const input = `
+    using user_role string;
+    define commom_user if user_role != admin then 1 else 0;
+  `;
+});
+
+test('Test regex operation', () => {
+  const input = `
+    using user_name string;
+    define is_admin if user_name regex %admin% then 1 else 0;
+  `;
+});
+
+test('Get define token with conditions and parenthesis', () => {
+  const input = `
+    using user_name string;
+    using user_role string;
+    using user_password string;
+
+    define default_password admin123;
+
+    define is_admin if (user_role = admin and user_password = default_password) or user_name = admin then 1 else 0;
+  `;
+});
 
 // test('Get return token of a const', () => {
 //   const input = `
