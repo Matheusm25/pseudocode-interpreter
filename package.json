@@ -11,7 +11,7 @@
   "author": "Matheus Marques <matheusml25@hotmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "jest"
+    "test": "jest ./tests"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",

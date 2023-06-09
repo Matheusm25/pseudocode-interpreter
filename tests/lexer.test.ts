@@ -150,32 +150,32 @@ test('Get invalid operation name', () => {
 //   expect(tokens[2]).toHaveProperty('value', '');
 // });
 
-// test('Get invalid token type', () => {
-//   const input = `
-//     invalid username as string;
-//   `;
+test('Get invalid token type', () => {
+  const input = `
+      invalid username string;
+    `;
 
-//   expect(() => lexer.getTokensFromString(input)).toThrow(
-//     'Unknown token type: invalid',
-//   );
-// });
+  expect(() => lexer.getTokensFromString(input)).toThrow(
+    'Unknown token type: invalid',
+  );
+});
 
-// test('Get invalid type for using command', () => {
-//   const input = `
-//     using age as integer;
-//   `;
+test('Get invalid type for using command', () => {
+  const input = `
+    using age integer;
+  `;
 
-//   expect(() => lexer.getTokensFromString(input)).toThrow(
-//     'Invalid type for using command: integer',
-//   );
-// });
+  expect(() => lexer.getTokensFromString(input)).toThrow(
+    'Invalid type for using command: integer',
+  );
+});
 
-// test('Get invalid number of arguments for command', () => {
-//   const input = `
-//     using age;
-//   `;
+test('Get invalid number of arguments for command', () => {
+  const input = `
+    using age;
+  `;
 
-//   expect(() => lexer.getTokensFromString(input)).toThrow(
-//     'Invalid number of arguments for command: using age',
-//   );
-// });
+  expect(() => lexer.getTokensFromString(input)).toThrow(
+    'Invalid number of arguments for command: using age',
+  );
+});
