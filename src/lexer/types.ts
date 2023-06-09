@@ -1,7 +1,17 @@
 export interface Token {
-  type: 'using' | 'define';
-  constValue?: string;
-  valueType?: TokenValueType;
-  value: string;
+  type: TokenType;
+  value?: string;
+  operation?: TokenOperation;
+  operationArgs?: Array<Token>;
 }
+
+type TokenType =
+  | 'keyword'
+  | 'variable'
+  | 'variableType'
+  | 'constant'
+  | 'constantValue'
+  | 'operation'
+  | 'number';
 export type TokenValueType = 'string' | 'number';
+export type TokenOperation = 'multiply' | 'divide' | 'add' | 'subtract';
