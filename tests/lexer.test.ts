@@ -18,7 +18,7 @@ test('Get variables token', () => {
 
 test('Get define token', () => {
   const input = `
-    define admin_role_slug as admin;
+    DEFINE admin_role_slug as admin;
   `;
 
   const tokens = lexer.getTokensFromString(input);

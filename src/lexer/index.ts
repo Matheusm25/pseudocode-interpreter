@@ -13,7 +13,7 @@ export class Lexer {
   private getTokenByType(args: Array<string>): Token {
     const [type, ...values] = args;
 
-    switch (type) {
+    switch (type.toLocaleLowerCase()) {
       case 'using':
         this.validateCommandArgsLength(args, 4);
         return this.getUsingToken(
@@ -58,7 +58,7 @@ export class Lexer {
   }
 
   private validateCommandArgsLength(args: Array<string>, length: number): void {
-    if (args.length !== length) {
+    if (args.length < length) {
       throw new Error(
         `Invalid number of arguments for command: ${args.join(' ')}`,
       );
