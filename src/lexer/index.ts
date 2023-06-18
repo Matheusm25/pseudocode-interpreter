@@ -1,4 +1,4 @@
-import { Token, TokenValueType } from './types';
+import { Token, TokenConditionCheckType, TokenValueType } from './types';
 
 export class Lexer {
   constants: Array<Token> = [];
@@ -39,9 +39,11 @@ export class Lexer {
 
     if (variableValue.length === 1) {
       commandTokens.push({ type: 'constantValue', value: variableValue[0] });
+    } else if (this.isConditional(variableValue[0])) {
+      commandTokens.push(this.getConditionalToken(variableValue));
     } else {
       const value = variableValue.join(' ');
-      commandTokens.push(this.getOperationArgs(value));
+      commandTokens.push(this.getOperationToken(value));
     }
 
     this.constants.push({ type: 'constant', value: variableName });
@@ -73,7 +75,7 @@ export class Lexer {
       .filter(command => command.length > 0);
   }
 
-  private getOperationArgs(args: string): Token {
+  private getOperationToken(args: string): Token {
     this.validateOperation(args);
     const [operation, ...operationArgs] = args.split('(');
 
@@ -96,7 +98,7 @@ export class Lexer {
         const closingParenthesisIndex = rest.join(',').indexOf(')');
 
         operationToken.operationArgs.push(
-          this.getOperationArgs(
+          this.getOperationToken(
             rest.join(',').slice(0, closingParenthesisIndex + 1),
           ),
         );
@@ -138,16 +140,127 @@ export class Lexer {
     return this.constants.some(constant => constant.value === value);
   }
 
+  private isOperation(value: string): boolean {
+    return ['add', 'subtract', 'multiply', 'divide'].includes(
+      value.toLocaleLowerCase(),
+    );
+  }
+
+  private getValueToken(value: string): Token {
+    value = value.trim();
+    if (this.isVariable(value)) {
+      return { type: 'variable', value };
+    }
+
+    if (this.isConstant(value)) {
+      return { type: 'constant', value };
+    }
+
+    if (this.isOperation(value.split('(')[0])) {
+      return this.getOperationToken(value);
+    }
+
+    if (!isNaN(Number(value))) {
+      return { type: 'number', value };
+    }
+
+    return { type: 'constantValue', value };
+  }
+
   private validateOperation(operation: string) {
     const operationName = operation.split('(')[0];
 
-    if (
-      !['add', 'subtract', 'multiply', 'divide'].includes(
-        operationName.toLocaleLowerCase(),
-      )
-    ) {
+    if (!this.isOperation(operationName)) {
       throw new Error(`Invalid operation: ${operationName}`);
     }
+  }
+
+  private isConditional(value: string): boolean {
+    return value === 'if';
+  }
+
+  private getUniqueConditionalToken(args: Array<string>): Token {
+    const checkOperatorIndex = args.findIndex(arg =>
+      this.validateConditionCheckType(arg),
+    );
+    const thenIndex = args.findIndex(arg => arg === 'then');
+    const elseIndex = args.findIndex(arg => arg === 'else');
+
+    if (checkOperatorIndex === -1) {
+      throw new Error(`Invalid condition: ${args.join(' ')}`);
+    }
+
+    return {
+      type: 'condition',
+      conditionCheck: {
+        left: this.getValueToken(args.slice(0, checkOperatorIndex).join(' ')),
+        right: this.getValueToken(
+          args
+            .slice(
+              checkOperatorIndex + 1,
+              thenIndex >= 0 ? thenIndex : undefined,
+            )
+            .join(' '),
+        ),
+        type: args[checkOperatorIndex] as TokenConditionCheckType,
+        resultIfFalse:
+          elseIndex > -1
+            ? this.getValueToken(args.slice(elseIndex + 1).join(' '))
+            : { type: 'null' },
+        resultIfTrue:
+          thenIndex > -1
+            ? this.getValueToken(args.slice(thenIndex + 1, elseIndex).join(' '))
+            : { type: 'null' },
+      },
+    };
+  }
+
+  private getOneOperatorConditionToken(
+    args: Array<string>,
+    operator: 'and' | 'or',
+  ): Token {
+    const thenIndex = args.findIndex(arg => arg === 'then');
+    const elseIndex = args.findIndex(arg => arg === 'else');
+
+    const conditions = args
+      .slice(0, thenIndex > -1 ? thenIndex : elseIndex)
+      .join(' ')
+      .split(operator);
+
+    return {
+      type: 'condition',
+      ConditionOperations: {
+        [operator]: conditions.map(condition =>
+          this.getUniqueConditionalToken(condition.split(' ')),
+        ),
+        resultIfFalse:
+          elseIndex > -1
+            ? this.getValueToken(args.slice(elseIndex + 1).join(' '))
+            : { type: 'null' },
+        resultIfTrue:
+          thenIndex > -1
+            ? this.getValueToken(args.slice(thenIndex + 1, elseIndex).join(' '))
+            : { type: 'null' },
+      },
+    };
+  }
+
+  private getConditionalToken(args: Array<string>): Token {
+    args.shift();
+    if (!args[1].includes('(')) {
+      if (args.includes('and') && !args.includes('or')) {
+        return this.getOneOperatorConditionToken(args, 'and');
+      } else if (args.includes('or') && !args.includes('and')) {
+        return this.getOneOperatorConditionToken(args, 'or');
+      } else if (args.includes('and') && args.includes('or')) {
+      } else {
+        return this.getUniqueConditionalToken(args);
+      }
+    }
+  }
+
+  private validateConditionCheckType(operator): boolean {
+    return ['=', '!=', '<', '>', '<=', '>=', 'regex'].includes(operator);
   }
 
   private validateCommandArgsLength(args: Array<string>, length: number): void {
