@@ -79,3 +79,13 @@ export const INVALID_TOKEN_TYPE = 'invalid username string;';
 export const INVALID_VARIABLE_TYPE = 'using age integer;';
 
 export const INVALID_NUMBER_OF_ARGUMENTS = 'using age;';
+
+export const DEFINE_WITH_CONDITION_AND_PARENTHESIS = `
+using user_name string;
+using user_role string;
+using user_password string;
+
+define default_password admin123;
+
+define is_admin if (user_role = admin and user_password = default_password) or user_name = admin then 1 else 0;
+`;

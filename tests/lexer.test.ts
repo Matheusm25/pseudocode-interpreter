@@ -3,6 +3,7 @@ import { Lexer } from '../src/lexer';
 import {
   DEFINE_WITH_CONDITION,
   DEFINE_WITH_CONDITIONS_AND_OPERATIONS,
+  DEFINE_WITH_CONDITION_AND_PARENTHESIS,
   DEFINE_WITH_INVALID_OPERATION_ARGUMENT,
   DEFINE_WITH_MULTIPLE_CONDITIONS,
   DEFINE_WITH_MULTIPLE_OPERATIONS,
@@ -282,17 +283,125 @@ test('Get define token conditions and operations', () => {
   );
 });
 
-// test('Get define token with conditions and parenthesis', () => {
-//   const input = `
-//     using user_name string;
-//     using user_role string;
-//     using user_password string;
+test('Get define token with conditions and parenthesis', () => {
+  const tokens = lexer.getTokensFromString(
+    DEFINE_WITH_CONDITION_AND_PARENTHESIS,
+  );
 
-//     define default_password admin123;
+  expect(tokens[4][0]).toHaveProperty('value', 'define');
+  expect(tokens[4][0]).toHaveProperty('type', 'keyword');
+  expect(tokens[4][1]).toHaveProperty('value', 'is_admin');
+  expect(tokens[4][1]).toHaveProperty('type', 'constant');
 
-//     define is_admin if (user_role = admin and user_password = default_password) or user_name = admin then 1 else 0;
-//   `;
-// });
+  expect(tokens[4][2]).toHaveProperty('type', 'condition');
+  expect(tokens[4][2].ConditionOperations.or.length).toBe(2);
+
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and.length,
+  ).toBe(2);
+
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[0],
+  ).toHaveProperty('type', 'condition');
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[0]
+      .conditionCheck,
+  ).toHaveProperty('type', '=');
+
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[0]
+      .conditionCheck.left,
+  ).toHaveProperty('type', 'variable');
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[0]
+      .conditionCheck.left,
+  ).toHaveProperty('value', 'user_role');
+
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[0]
+      .conditionCheck.right,
+  ).toHaveProperty('type', 'constantValue');
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[0]
+      .conditionCheck.right,
+  ).toHaveProperty('value', 'admin');
+
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[1],
+  ).toHaveProperty('type', 'condition');
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[1]
+      .conditionCheck,
+  ).toHaveProperty('type', '=');
+
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[1]
+      .conditionCheck.left,
+  ).toHaveProperty('type', 'variable');
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[1]
+      .conditionCheck.left,
+  ).toHaveProperty('value', 'user_password');
+
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[1]
+      .conditionCheck.right,
+  ).toHaveProperty('type', 'constant');
+  expect(
+    tokens[4][2].ConditionOperations.or[0].ConditionOperations.and[1]
+      .conditionCheck.right,
+  ).toHaveProperty('value', 'default_password');
+
+  expect(
+    tokens[4][2].ConditionOperations.or[1].ConditionOperations.and.length,
+  ).toBe(2);
+
+  expect(
+    tokens[4][2].ConditionOperations.or[1].ConditionOperations.and[0],
+  ).toHaveProperty('type', 'condition');
+  expect(
+    tokens[4][2].ConditionOperations.or[1].ConditionOperations.and[0]
+      .conditionCheck,
+  ).toHaveProperty('type', '=');
+
+  expect(
+    tokens[4][2].ConditionOperations.or[1].ConditionOperations.and[0]
+      .conditionCheck.left,
+  ).toHaveProperty('type', 'variable');
+  expect(
+    tokens[4][2].ConditionOperations.or[1].ConditionOperations.and[0]
+      .conditionCheck.left,
+  ).toHaveProperty('value', 'user_name');
+
+  expect(
+    tokens[4][2].ConditionOperations.or[1].ConditionOperations.and[0]
+      .conditionCheck.right,
+  ).toHaveProperty('type', 'constantValue');
+  expect(
+    tokens[4][2].ConditionOperations.or[1].ConditionOperations.and[0]
+      .conditionCheck.right,
+  ).toHaveProperty('value', 'admin');
+
+  expect(tokens[4][2].ConditionOperations.resultIfTrue).toHaveProperty(
+    'type',
+    'constantValue',
+  );
+
+  expect(tokens[4][2].ConditionOperations.resultIfTrue).toHaveProperty(
+    'value',
+    '1',
+  );
+
+  expect(tokens[4][2].ConditionOperations.resultIfFalse).toHaveProperty(
+    'type',
+    'constantValue',
+  );
+
+  expect(tokens[4][2].ConditionOperations.resultIfFalse).toHaveProperty(
+    'value',
+    '0',
+  );
+});
 
 // test('Get return token of a variable', () => {
 //   const input = `
