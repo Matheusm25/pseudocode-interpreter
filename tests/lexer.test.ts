@@ -1,12 +1,26 @@
 import { test, expect } from '@jest/globals';
 import { Lexer } from '../src/lexer';
+import {
+  DEFINE_WITH_CONDITION,
+  DEFINE_WITH_CONDITIONS_AND_OPERATIONS,
+  DEFINE_WITH_INVALID_OPERATION_ARGUMENT,
+  DEFINE_WITH_MULTIPLE_CONDITIONS,
+  DEFINE_WITH_MULTIPLE_OPERATIONS,
+  DEFINE_WITH_MULTIPLE_PARAMETERS,
+  DEFINE_WITH_OPERATION,
+  INVALID_CONDITION,
+  INVALID_NUMBER_OF_ARGUMENTS,
+  INVALID_OPERATION_NAME,
+  INVALID_TOKEN_TYPE,
+  INVALID_VARIABLE_TYPE,
+  UNIQUE_DEFINE_CONSTANT,
+  UNIQUE_SET_VARIABLE,
+} from './inputs';
 
 const lexer = new Lexer();
 
 test('Get variables token', () => {
-  const input = 'using username string;';
-
-  const tokens = lexer.getTokensFromString(input);
+  const tokens = lexer.getTokensFromString(UNIQUE_SET_VARIABLE);
 
   expect(tokens[0][0]).toHaveProperty('value', 'using');
   expect(tokens[0][0]).toHaveProperty('type', 'keyword');
@@ -17,9 +31,7 @@ test('Get variables token', () => {
 });
 
 test('Get define token', () => {
-  const input = 'DEFINE admin_role_slug admin;';
-
-  const tokens = lexer.getTokensFromString(input);
+  const tokens = lexer.getTokensFromString(UNIQUE_DEFINE_CONSTANT);
 
   expect(tokens[0][0]).toHaveProperty('value', 'DEFINE');
   expect(tokens[0][0]).toHaveProperty('type', 'keyword');
@@ -30,12 +42,7 @@ test('Get define token', () => {
 });
 
 test('Get define token with operation', () => {
-  const input = `
-    using user_height_in_meters number;
-    define user_height_in_centimeters multiply(user_height_in_meters, 100);
-  `;
-
-  const tokens = lexer.getTokensFromString(input);
+  const tokens = lexer.getTokensFromString(DEFINE_WITH_OPERATION);
 
   expect(tokens).toHaveLength(2);
   expect(tokens[1][0]).toHaveProperty('value', 'define');
@@ -56,22 +63,13 @@ test('Get define token with operation', () => {
 });
 
 test('Get define token with invalid operation argument', () => {
-  const input = `
-    define user_height_in_centimeters multiply(user_height_in_meters, 100);
-  `;
-
-  expect(() => lexer.getTokensFromString(input)).toThrowError(
-    'Invalid argument: user_height_in_meters',
-  );
+  expect(() =>
+    lexer.getTokensFromString(DEFINE_WITH_INVALID_OPERATION_ARGUMENT),
+  ).toThrowError('Invalid argument: user_height_in_meters');
 });
 
 test('Get define token with multiple operations', () => {
-  const input = `
-    using user_age number;
-    define user_age_in_days multiply(user_age, multiply(30, 12));
-  `;
-
-  const tokens = lexer.getTokensFromString(input);
+  const tokens = lexer.getTokensFromString(DEFINE_WITH_MULTIPLE_OPERATIONS);
 
   expect(tokens).toHaveLength(2);
   expect(tokens[1][0]).toHaveProperty('value', 'define');
@@ -91,9 +89,7 @@ test('Get define token with multiple operations', () => {
 });
 
 test('Get define token with multiple parameters in operation', () => {
-  const input = 'define number_for_test add(1, add(2, 3), subtract(5, 2));';
-
-  const tokens = lexer.getTokensFromString(input);
+  const tokens = lexer.getTokensFromString(DEFINE_WITH_MULTIPLE_PARAMETERS);
 
   expect(tokens).toHaveLength(1);
   expect(tokens[0][0]).toHaveProperty('value', 'define');
@@ -107,20 +103,13 @@ test('Get define token with multiple parameters in operation', () => {
 });
 
 test('Get invalid operation name', () => {
-  const input = 'define number_for_test invalid(1, 2);';
-
-  expect(() => lexer.getTokensFromString(input)).toThrowError(
+  expect(() => lexer.getTokensFromString(INVALID_OPERATION_NAME)).toThrowError(
     'Invalid operation: invalid',
   );
 });
 
 test('Get define with condition', () => {
-  const input = `
-    using user_role string;
-    define is_admin if user_role = admin then 1 else 0;
-  `;
-
-  const tokens = lexer.getTokensFromString(input);
+  const tokens = lexer.getTokensFromString(DEFINE_WITH_CONDITION);
 
   expect(tokens).toHaveLength(2);
   expect(tokens[1][0]).toHaveProperty('value', 'define');
@@ -156,28 +145,14 @@ test('Get define with condition', () => {
   );
 });
 
-// test('Get invalid condition error', () => {
-//   const input = `
-//     using user_role string;
-//     define is_admin if user_role then 1 else 0;
-//   `;
-
-//   expect(() => lexer.getTokensFromString(input)).toThrowError(
-//     'Invalid condition: if user_role then 1 else 0',
-//   );
-// });
+test('Get invalid condition error', () => {
+  expect(() => lexer.getTokensFromString(INVALID_CONDITION)).toThrowError(
+    'Invalid condition: user_role then 1 else 0',
+  );
+});
 
 test('Get define token with multiple conditions', () => {
-  const input = `
-    using user_role string;
-    using user_password string;
-
-    define default_password admin123;
-
-    define is_admin if user_role = admin and user_password = default_password then 1 else 0;
-  `;
-
-  const tokens = lexer.getTokensFromString(input);
+  const tokens = lexer.getTokensFromString(DEFINE_WITH_MULTIPLE_CONDITIONS);
 
   expect(tokens[3][0]).toHaveProperty('value', 'define');
   expect(tokens[3][0]).toHaveProperty('type', 'keyword');
@@ -252,59 +227,60 @@ test('Get define token with multiple conditions', () => {
   );
 });
 
-// test('Get define token conditions and operations', () => {
-//   const input = `
-//     using user_height_in_meters number;
+test('Get define token conditions and operations', () => {
+  const tokens = lexer.getTokensFromString(
+    DEFINE_WITH_CONDITIONS_AND_OPERATIONS,
+  );
 
-//     define is_tall if multiply(user_height_in_meters, 100) > 180 then 1 else 0;
-//   `;
-// });
+  expect(tokens[1][0]).toHaveProperty('value', 'define');
+  expect(tokens[1][0]).toHaveProperty('type', 'keyword');
+  expect(tokens[1][1]).toHaveProperty('value', 'is_tall');
+  expect(tokens[1][1]).toHaveProperty('type', 'constant');
 
-// test('Test > operation', () => {
-//   const input = `
-//     using user_height_in_meters number;
+  expect(tokens[1][2]).toHaveProperty('type', 'condition');
+  expect(tokens[1][2].conditionCheck).toHaveProperty('type', '>');
 
-//     define is_tall if user_height_in_meters > 180 then 1 else 0;
-//   `;
-// });
+  expect(tokens[1][2].conditionCheck.left).toHaveProperty('type', 'operation');
+  expect(tokens[1][2].conditionCheck.left).toHaveProperty(
+    'operation',
+    'multiply',
+  );
+  expect(tokens[1][2].conditionCheck.left.operationArgs.length).toBe(2);
+  expect(tokens[1][2].conditionCheck.left.operationArgs[0]).toHaveProperty(
+    'type',
+    'variable',
+  );
+  expect(tokens[1][2].conditionCheck.left.operationArgs[0]).toHaveProperty(
+    'value',
+    'user_height_in_meters',
+  );
+  expect(tokens[1][2].conditionCheck.left.operationArgs[1]).toHaveProperty(
+    'type',
+    'number',
+  );
+  expect(tokens[1][2].conditionCheck.left.operationArgs[1]).toHaveProperty(
+    'value',
+    '100',
+  );
 
-// test('Test >= operation', () => {
-//   const input = `
-//     using user_height_in_meters number;
+  expect(tokens[1][2].conditionCheck.right).toHaveProperty('type', 'number');
+  expect(tokens[1][2].conditionCheck.right).toHaveProperty('value', '180');
 
-//     define is_tall if user_height_in_meters >= 180 then 1 else 0;
-//   `;
-// });
+  expect(tokens[1][2].conditionCheck.resultIfTrue).toHaveProperty(
+    'type',
+    'number',
+  );
+  expect(tokens[1][2].conditionCheck.resultIfTrue).toHaveProperty('value', '1');
 
-// test('Test < operation', () => {
-//   const input = `
-//     using user_height_in_meters number;
-
-//     define is_short if user_height_in_meters < 180 then 1 else 0;
-//   `;
-// });
-
-// test('Test <= operation', () => {
-//   const input = `
-//     using user_height_in_meters number;
-
-//     define is_short if user_height_in_meters <= 180 then 1 else 0;
-//   `;
-// });
-
-// test('Test != operation', () => {
-//   const input = `
-//     using user_role string;
-//     define commom_user if user_role != admin then 1 else 0;
-//   `;
-// });
-
-// test('Test regex operation', () => {
-//   const input = `
-//     using user_name string;
-//     define is_admin if user_name regex %admin% then 1 else 0;
-//   `;
-// });
+  expect(tokens[1][2].conditionCheck.resultIfFalse).toHaveProperty(
+    'type',
+    'number',
+  );
+  expect(tokens[1][2].conditionCheck.resultIfFalse).toHaveProperty(
+    'value',
+    '0',
+  );
+});
 
 // test('Get define token with conditions and parenthesis', () => {
 //   const input = `
@@ -354,31 +330,19 @@ test('Get define token with multiple conditions', () => {
 // });
 
 test('Get invalid token type', () => {
-  const input = `
-      invalid username string;
-    `;
-
-  expect(() => lexer.getTokensFromString(input)).toThrow(
+  expect(() => lexer.getTokensFromString(INVALID_TOKEN_TYPE)).toThrow(
     'Unknown token type: invalid',
   );
 });
 
 test('Get invalid type for using command', () => {
-  const input = `
-    using age integer;
-  `;
-
-  expect(() => lexer.getTokensFromString(input)).toThrow(
+  expect(() => lexer.getTokensFromString(INVALID_VARIABLE_TYPE)).toThrow(
     'Invalid type for using command: integer',
   );
 });
 
 test('Get invalid number of arguments for command', () => {
-  const input = `
-    using age;
-  `;
-
-  expect(() => lexer.getTokensFromString(input)).toThrow(
+  expect(() => lexer.getTokensFromString(INVALID_NUMBER_OF_ARGUMENTS)).toThrow(
     'Invalid number of arguments for command: using age',
   );
 });
