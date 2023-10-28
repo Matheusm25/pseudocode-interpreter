@@ -256,7 +256,7 @@ export class Lexer {
       } else {
         return this.getUniqueConditionalToken(args);
       }
-    }
+    } else {}
   }
 
   private validateConditionCheckType(operator): boolean {
